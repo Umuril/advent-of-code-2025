@@ -13,6 +13,8 @@ mod timings;
 
 pub const ANSI_ITALIC: &str = "\x1b[3m";
 pub const ANSI_BOLD: &str = "\x1b[1m";
+pub const ANSI_BOLD_RED: &str = "\x1b[1;31m";
+pub const ANSI_BOLD_GREEN: &str = "\x1b[1;32m";
 pub const ANSI_RESET: &str = "\x1b[0m";
 
 /// Helper function that reads a text file to a string.
@@ -62,7 +64,9 @@ macro_rules! solution {
         fn main() {
             use $crate::template::runner::*;
             let input = $crate::template::read_file("inputs", DAY);
-            $( run_part($func, &input, DAY, $part); )*
+            let output = $crate::template::read_file("outputs", DAY);
+            let expected : Vec<String> = output.split("\n").map(|x| x.to_owned()).collect();
+            $( run_part($func, &input, DAY, $part, &expected); )*
         }
     };
 }

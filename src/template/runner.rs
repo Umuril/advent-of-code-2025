@@ -6,16 +6,29 @@ use std::process::Output;
 use std::time::{Duration, Instant};
 use std::{cmp, env, process};
 
-use crate::template::ANSI_BOLD;
-use crate::template::{ANSI_ITALIC, ANSI_RESET, Day, aoc_cli};
+use crate::template::{ANSI_BOLD_GREEN, ANSI_BOLD_RED, ANSI_ITALIC, ANSI_RESET, Day, aoc_cli};
 
-pub fn run_part<I: Copy, T: Display>(func: impl Fn(I) -> Option<T>, input: I, day: Day, part: u8) {
+pub fn run_part<I: Copy>(
+    func: impl Fn(I) -> Option<String>,
+    input: I,
+    day: Day,
+    part: u8,
+    expected: &[String],
+) {
     let part_str = format!("Part {part}");
 
-    let (result, duration, samples) =
-        run_timed(func, input, |result| print_result(result, &part_str, ""));
+    let expected = expected.get(part as usize - 1).cloned().unwrap_or_default();
 
-    print_result(&result, &part_str, &format_duration(&duration, samples));
+    let (result, duration, samples) = run_timed(func, input, |result| {
+        print_result(result, &part_str, "", &expected)
+    });
+
+    print_result(
+        &result,
+        &part_str,
+        &format_duration(&duration, samples),
+        &expected,
+    );
 
     if let Some(result) = result {
         submit_result(result, day, part);
@@ -90,7 +103,12 @@ fn format_duration(duration: &Duration, samples: u128) -> String {
     }
 }
 
-fn print_result<T: Display>(result: &Option<T>, part: &str, duration_str: &str) {
+fn print_result<T: Display + std::cmp::PartialEq>(
+    result: &Option<T>,
+    part: &str,
+    duration_str: &str,
+    expected: &T,
+) {
     let is_intermediate_result = duration_str.is_empty();
 
     match result {
@@ -105,7 +123,11 @@ fn print_result<T: Display>(result: &Option<T>, part: &str, duration_str: &str) 
                     println!("{result}");
                 }
             } else {
-                let str = format!("{part}: {ANSI_BOLD}{result}{ANSI_RESET}{duration_str}");
+                let color = match result == expected {
+                    true => ANSI_BOLD_GREEN,
+                    false => ANSI_BOLD_RED,
+                };
+                let str = format!("{part}: {color}{result}{ANSI_RESET}{duration_str}");
                 if is_intermediate_result {
                     print!("{str}");
                 } else {
