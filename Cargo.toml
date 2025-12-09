@@ -31,3 +31,4 @@ tinyjson = "2.5.1"
 nom = "8.0.0"
 itertools = "0.14.0"
 pathfinding = "4.14.0"
+ phf = { version = "0.13.1", features = ["macros"] }
